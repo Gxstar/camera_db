@@ -1,0 +1,22 @@
+import os
+from sqlmodel import create_engine, SQLModel
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
+
+# 获取数据库URL，默认为SQLite
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///camera.db")
+
+# 创建数据库引擎
+engine = create_engine(DATABASE_URL, echo=True)
+
+def create_db_and_tables():
+    """创建数据库和表"""
+    from model import BaseModel, User, Camera
+    SQLModel.metadata.create_all(engine)
+
+def drop_db_and_tables():
+    """删除数据库表（用于开发环境）"""
+    from model import BaseModel, User, Camera
+    SQLModel.metadata.drop_all(engine)
