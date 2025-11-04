@@ -1,5 +1,5 @@
 import os
-from sqlmodel import create_engine, SQLModel
+from sqlmodel import create_engine, SQLModel, Session
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -24,3 +24,8 @@ def drop_db_and_tables():
     # 使用SQLModel的元数据来删除所有表
     from sqlmodel import SQLModel
     SQLModel.metadata.drop_all(engine)
+
+def get_session():
+    """获取数据库会话"""
+    with Session(engine) as session:
+        yield session

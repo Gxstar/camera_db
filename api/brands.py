@@ -4,12 +4,18 @@ from sqlmodel import Session, select
 
 from database.engine import get_session
 from model.brand import Brand
+from model.user import User
+from api.auth import get_current_user, get_current_admin_user
 
 router = APIRouter()
 
 @router.post("/brands/", response_model=Brand)
-def create_brand(brand: Brand, session: Session = Depends(get_session)):
-    """创建品牌"""
+def create_brand(
+    brand: Brand, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """创建品牌（需要管理员或编辑者权限）"""
     # 检查品牌名称是否已存在
     existing_brand = session.exec(select(Brand).where(Brand.name == brand.name)).first()
     if existing_brand:
@@ -29,9 +35,10 @@ def read_brands(
     limit: int = 100, 
     is_active: Optional[bool] = None,
     brand_type: Optional[str] = None,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
-    """获取品牌列表"""
+    """获取品牌列表（需要登录）"""
     query = select(Brand)
     
     if is_active is not None:
@@ -66,8 +73,13 @@ def read_brand_by_name(brand_name: str, session: Session = Depends(get_session))
     return brand
 
 @router.put("/brands/{brand_id}", response_model=Brand)
-def update_brand(brand_id: int, brand_update: Brand, session: Session = Depends(get_session)):
-    """更新品牌信息"""
+def update_brand(
+    brand_id: int, 
+    brand_update: Brand, 
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """更新品牌信息（需要管理员或编辑者权限）"""
     brand = session.get(Brand, brand_id)
     if not brand:
         raise HTTPException(
@@ -95,8 +107,8 @@ def update_brand(brand_id: int, brand_update: Brand, session: Session = Depends(
     return brand
 
 @router.delete("/brands/{brand_id}")
-def delete_brand(brand_id: int, session: Session = Depends(get_session)):
-    """删除品牌"""
+def delete_brand(brand_id: int, current_user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    """删除品牌（需要管理员权限）"""
     brand = session.get(Brand, brand_id)
     if not brand:
         raise HTTPException(
@@ -118,8 +130,8 @@ def delete_brand(brand_id: int, session: Session = Depends(get_session)):
     return {"message": "品牌删除成功"}
 
 @router.patch("/brands/{brand_id}/activate")
-def activate_brand(brand_id: int, session: Session = Depends(get_session)):
-    """激活品牌"""
+def activate_brand(brand_id: int, current_user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    """激活品牌（需要管理员权限）"""
     brand = session.get(Brand, brand_id)
     if not brand:
         raise HTTPException(
@@ -133,8 +145,8 @@ def activate_brand(brand_id: int, session: Session = Depends(get_session)):
     return {"message": "品牌激活成功"}
 
 @router.patch("/brands/{brand_id}/deactivate")
-def deactivate_brand(brand_id: int, session: Session = Depends(get_session)):
-    """停用品牌"""
+def deactivate_brand(brand_id: int, current_user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    """停用品牌（需要管理员权限）"""
     brand = session.get(Brand, brand_id)
     if not brand:
         raise HTTPException(

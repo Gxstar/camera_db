@@ -10,7 +10,7 @@ from alembic import context
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 导入我们的模型
-from model import BaseModel, User, Camera
+from model import BaseModel, User, Brand, Camera, Lens, Mount, BrandMount
 from database.engine import engine
 
 # this is the Alembic Config object, which provides
@@ -50,6 +50,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+        compare_server_default=True
     )
 
     with context.begin_transaction():
