@@ -20,20 +20,49 @@ camera_db/
 #### 品牌 ↔ 相机
 - **关系**: 一个品牌可以拥有多个相机
 - **品牌端**: `cameras: List["Camera"]`
-- **相机端**: `brand_id: Optional[int]` (外键)
-- **加载策略**: 品牌加载相机时使用 `selectin` 策略
+- **相机端**: `brand_id: int` (外键，必需字段)
+- **加载策略**: 品牌加载相机时使用 `joined` 策略
 
 #### 品牌 ↔ 镜头
 - **关系**: 一个品牌可以拥有多个镜头
 - **品牌端**: `lenses: List["Lens"]`
-- **镜头端**: `brand_id: Optional[int]` (外键)
-- **加载策略**: 品牌加载镜头时使用 `selectin` 策略
+- **镜头端**: `brand_id: int` (外键，必需字段)
+- **加载策略**: 品牌加载镜头时使用 `joined` 策略
+
+#### 卡口 ↔ 相机
+- **关系**: 一个卡口可以对应多个相机，一个相机只能属于一个卡口
+- **卡口端**: `cameras: List["Camera"]`
+- **相机端**: `mount_id: int` (外键，必需字段)
+- **加载策略**: 卡口加载相机时使用 `joined` 策略
+
+#### 卡口 ↔ 镜头
+- **关系**: 一个卡口可以对应多个镜头，一个镜头只能属于一个卡口
+- **卡口端**: `lenses: List["Lens"]`
+- **镜头端**: `mount_id: int` (外键，必需字段)
+- **加载策略**: 卡口加载镜头时使用 `joined` 策略
+
+### 多对多关系
+
+#### 品牌 ↔ 卡口
+- **关系**: 一个品牌可以拥有多个卡口，一个卡口也可以被多个品牌使用
+- **示例**: 
+  - 佳能品牌拥有 EF、RF 卡口
+  - L卡口被徕卡、松下、适马等多个品牌使用
+- **实现方式**: 通过关联表 `BrandMount` 实现真正的多对多关系
+- **关联表字段**: 
+  - `brand_id`: 品牌ID (外键)
+  - `mount_id`: 卡口ID (外键)
+  - `is_primary`: 是否为主要卡口
+  - `compatibility_notes`: 兼容性说明
 
 ### 关系图
 ```
 Brand (1) ←→ (N) Camera
    │
-   └── (N) Lens
+   ├── (N) Lens
+   └── (N) Mount (1) ←→ (N) Camera
+                │
+                └── (N) Lens
 ```
 
 ## 模型字段说明
@@ -84,14 +113,15 @@ Brand (1) ←→ (N) Camera
 | 字段名 | 类型 | 必填 | 描述 |
 |--------|------|------|------|
 | id | int | ✅ | 主键ID |
-| brand_id | Optional[int] | ❌ | 品牌外键 |
-| brand | Optional[Brand] | ❌ | 品牌对象 |
+| brand_id | int | ✅ | 品牌外键 |
+| brand | Brand | ❌ | 品牌对象 |
+| mount_id | int | ✅ | 卡口外键 |
+| mount | Mount | ❌ | 卡口对象 |
 | sensor_size | Optional[SensorSize] | ❌ | 传感器尺寸 |
 | series | Optional[str] | ❌ | 相机系列 |
 | model | str | ✅ | 相机型号 |
 | megapixels | Optional[float] | ❌ | 像素数量 |
 | ibis_level | Optional[str] | ❌ | 机身防抖级别 |
-| mount_type | Optional[str] | ❌ | 卡口类型 |
 | has_hot_shoe | bool | ✅ | 是否有热靴 |
 | has_built_in_flash | bool | ✅ | 是否有内置闪光灯 |
 | has_wifi | bool | ✅ | 是否有WiFi |
@@ -112,16 +142,48 @@ Brand (1) ←→ (N) Camera
 - `ONE_INCH`: 一英寸
 - `OTHER`: 其他
 
-### 4. 镜头模型 (Lens)
+### 4. 卡口模型 (Mount)
+
+**文件**: `model/mount.py`
+
+| 字段名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| id | int | ✅ | 主键ID |
+| name | str | ✅ | 卡口名称 |
+| flange_distance | Optional[float] | ❌ | 法兰距(mm) |
+| release_year | Optional[int] | ❌ | 发布年份 |
+| is_active | bool | ✅ | 是否在用 |
+| description | Optional[str] | ❌ | 备注说明 |
+| created_at | datetime | ✅ | 创建时间 |
+| updated_at | datetime | ✅ | 更新时间 |
+| cameras | List[Camera] | ❌ | 相机列表 |
+| lenses | List[Lens] | ❌ | 镜头列表 |
+| brands | List[Brand] | ❌ | 支持品牌列表 |
+
+### 5. 关联表模型 (BrandMount)
+
+**文件**: `model/brand_mount.py`
+
+| 字段名 | 类型 | 必填 | 描述 |
+|--------|------|------|------|
+| brand_id | int | ✅ | 品牌ID (外键) |
+| mount_id | int | ✅ | 卡口ID (外键) |
+| is_primary | bool | ✅ | 是否为主要卡口 |
+| compatibility_notes | str | ✅ | 兼容性说明 |
+| brand | Brand | ❌ | 品牌对象 |
+| mount | Mount | ❌ | 卡口对象 |
+
+### 6. 镜头模型 (Lens)
 
 **文件**: `model/lens.py`
 
 | 字段名 | 类型 | 必填 | 描述 |
 |--------|------|------|------|
 | id | int | ✅ | 主键ID |
-| brand_id | Optional[int] | ❌ | 品牌外键 |
-| brand | Optional[Brand] | ❌ | 品牌对象 |
-| mount_type | str | ✅ | 卡口类型 |
+| brand_id | int | ✅ | 品牌外键 |
+| brand | Brand | ❌ | 品牌对象 |
+| mount_id | int | ✅ | 卡口外键 |
+| mount | Mount | ❌ | 卡口对象 |
 | model | str | ✅ | 镜头型号 |
 | series | Optional[str] | ❌ | 镜头系列 |
 | min_focal_length | float | ✅ | 最小焦距(mm) |
@@ -191,6 +253,10 @@ uv sync
 
 2. 初始化数据库:
 ```bash
+# 生成初始迁移脚本
+alembic revision --autogenerate -m "Initial migration"
+
+# 执行数据库迁移
 alembic upgrade head
 ```
 
@@ -198,6 +264,60 @@ alembic upgrade head
 ```bash
 python main.py
 ```
+
+## Alembic 数据库迁移命令
+
+### 常用命令
+
+- **查看当前迁移状态**:
+```bash
+alembic current
+```
+
+- **生成新的迁移脚本**:
+```bash
+alembic revision --autogenerate -m "描述信息"
+```
+
+- **执行迁移到最新版本**:
+```bash
+alembic upgrade head
+```
+
+- **回滚到上一个版本**:
+```bash
+alembic downgrade -1
+```
+
+- **回滚到特定版本**:
+```bash
+alembic downgrade <版本号>
+```
+
+- **查看迁移历史**:
+```bash
+alembic history
+```
+
+### 迁移流程
+
+1. 修改模型文件后，生成迁移脚本：
+```bash
+alembic revision --autogenerate -m "添加新字段"
+```
+
+2. 检查生成的迁移脚本是否正确
+
+3. 执行迁移：
+```bash
+alembic upgrade head
+```
+
+### 注意事项
+
+- 迁移脚本会自动检测模型变化并生成相应的SQL语句
+- 确保在生成迁移脚本前数据库表结构与模型定义一致
+- 对于SQLite数据库，某些ALTER操作可能不支持，需要手动处理
 
 ## 开发说明
 

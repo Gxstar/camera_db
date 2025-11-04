@@ -5,6 +5,7 @@ from enum import Enum
 
 if TYPE_CHECKING:
     from model.brand import Brand
+    from model.mount import Mount
 
 class LensType(str, Enum):
     """镜头类型枚举"""
@@ -18,11 +19,12 @@ class FocusType(str, Enum):
 
 class Lens(BaseModel, table=True):
     # 品牌关联
-    brand_id: Optional[int] = Field(default=None, foreign_key="brand.id", nullable=True)
-    brand: Optional["Brand"] = Relationship(back_populates="lenses", sa_relationship_kwargs={"lazy": "joined"})
+    brand_id: int = Field(foreign_key="brand.id", description="品牌外键")
+    brand: "Brand" = Relationship(back_populates="lenses", sa_relationship_kwargs={"lazy": "joined"})
     
-    # 卡口
-    mount_type: str = Field(description="卡口类型")
+    # 卡口关联
+    mount_id: int = Field(foreign_key="mount.id", description="卡口外键")
+    mount: "Mount" = Relationship(back_populates="lenses", sa_relationship_kwargs={"lazy": "joined"})
     
     # 型号信息
     model: str = Field(index=True, description="镜头型号")
@@ -71,7 +73,7 @@ class Lens(BaseModel, table=True):
     description: Optional[str] = Field(default=None, description="备注说明")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         
     def __init__(self, **kwargs):
         # 自动判断镜头类型

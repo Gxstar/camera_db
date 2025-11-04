@@ -5,6 +5,7 @@ from enum import Enum
 
 if TYPE_CHECKING:
     from model.brand import Brand
+    from model.mount import Mount
 
 class SensorSize(str, Enum):
     """传感器尺寸枚举"""
@@ -17,8 +18,12 @@ class SensorSize(str, Enum):
 
 class Camera(BaseModel, table=True):
     # 品牌关联
-    brand_id: Optional[int] = Field(default=None, foreign_key="brand.id", nullable=True)
-    brand: Optional["Brand"] = Relationship(back_populates="cameras", sa_relationship_kwargs={"lazy": "joined"})
+    brand_id: int = Field(foreign_key="brand.id", description="品牌外键")
+    brand: "Brand" = Relationship(back_populates="cameras", sa_relationship_kwargs={"lazy": "joined"})
+    
+    # 卡口
+    mount_id: int = Field(foreign_key="mount.id", description="卡口外键")
+    mount: "Mount" = Relationship(back_populates="cameras", sa_relationship_kwargs={"lazy": "joined"})
     
     # 传感器尺寸
     sensor_size: Optional[SensorSize] = Field(default=None, description="传感器尺寸")
@@ -34,9 +39,6 @@ class Camera(BaseModel, table=True):
     
     # 机身防抖级别
     ibis_level: Optional[str] = Field(default=None, description="机身防抖级别")
-    
-    # 卡口
-    mount_type: Optional[str] = Field(default=None, description="卡口类型")
     
     # 热靴
     has_hot_shoe: bool = Field(default=True, description="是否有热靴")
@@ -66,4 +68,4 @@ class Camera(BaseModel, table=True):
     description: Optional[str] = Field(default=None, description="备注说明")
 
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -13,10 +13,14 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 def create_db_and_tables():
     """创建数据库和表"""
-    from model import BaseModel, User, Camera
+    from model import BaseModel, User, Brand, Camera, Lens, Mount, BrandMount
+    # 使用SQLModel的元数据来创建所有表
+    from sqlmodel import SQLModel
     SQLModel.metadata.create_all(engine)
 
 def drop_db_and_tables():
     """删除数据库表（用于开发环境）"""
-    from model import BaseModel, User, Camera
+    from model import BaseModel, User, Brand, Camera, Lens, Mount, BrandMount
+    # 使用SQLModel的元数据来删除所有表
+    from sqlmodel import SQLModel
     SQLModel.metadata.drop_all(engine)
