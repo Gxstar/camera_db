@@ -36,3 +36,44 @@ class Brand(BaseModel, table=True):
         
     def __str__(self):
         return f"{self.name} ({self.country})" if self.country else self.name
+
+
+class BrandCreate(BaseModel):
+    """创建品牌时的数据模型"""
+    name: str
+    description: Optional[str] = None
+    website: Optional[str] = None
+    country: Optional[str] = None
+    brand_type: str = "camera"
+    is_active: bool = True
+
+
+class BrandUpdate(BaseModel):
+    """更新品牌时的数据模型"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    website: Optional[str] = None
+    country: Optional[str] = None
+    brand_type: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class BrandResponse(BaseModel):
+    """品牌响应数据模型"""
+    id: int
+    name: str
+    description: Optional[str]
+    website: Optional[str]
+    country: Optional[str]
+    brand_type: str
+    is_active: bool
+    create_time: str
+    update_time: str
+
+
+class BrandQuery(BaseModel):
+    """品牌查询参数模型"""
+    skip: int = 0
+    limit: int = 100
+    is_active: Optional[bool] = None
+    brand_type: Optional[str] = None

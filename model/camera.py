@@ -69,3 +69,75 @@ class Camera(BaseModel, table=True):
 
     class Config:
         from_attributes = True
+
+
+class CameraCreate(BaseModel):
+    """相机创建数据模型"""
+    brand_id: int
+    mount_id: int
+    sensor_size: Optional[SensorSize] = None
+    series: Optional[str] = None
+    model: str
+    megapixels: Optional[float] = None
+    ibis_level: Optional[str] = None
+    has_hot_shoe: bool = True
+    has_built_in_flash: bool = False
+    has_wifi: bool = True
+    has_bluetooth: bool = True
+    release_date: Optional[str] = None
+    release_price: Optional[float] = None
+    weight: Optional[float] = None
+    description: Optional[str] = None
+
+
+class CameraUpdate(BaseModel):
+    """相机更新数据模型"""
+    brand_id: Optional[int] = None
+    mount_id: Optional[int] = None
+    sensor_size: Optional[SensorSize] = None
+    series: Optional[str] = None
+    model: Optional[str] = None
+    megapixels: Optional[float] = None
+    ibis_level: Optional[str] = None
+    has_hot_shoe: Optional[bool] = None
+    has_built_in_flash: Optional[bool] = None
+    has_wifi: Optional[bool] = None
+    has_bluetooth: Optional[bool] = None
+    release_date: Optional[str] = None
+    release_price: Optional[float] = None
+    weight: Optional[float] = None
+    is_active: Optional[bool] = None
+    description: Optional[str] = None
+
+
+class CameraResponse(BaseModel):
+    """相机响应数据模型"""
+    id: int
+    brand_id: int
+    mount_id: int
+    sensor_size: Optional[SensorSize] = None
+    series: Optional[str] = None
+    model: str
+    megapixels: Optional[float] = None
+    ibis_level: Optional[str] = None
+    has_hot_shoe: bool = True
+    has_built_in_flash: bool = False
+    has_wifi: bool = True
+    has_bluetooth: bool = True
+    release_date: Optional[str] = None
+    release_price: Optional[float] = None
+    weight: Optional[float] = None
+    is_active: bool = True
+    description: Optional[str] = None
+    create_time: str
+    update_time: str
+
+
+class CameraQuery(BaseModel):
+    """相机查询数据模型"""
+    skip: int = 0
+    limit: int = 100
+    is_active: Optional[bool] = None
+    brand_id: Optional[int] = None
+    mount_id: Optional[int] = None
+    sensor_size: Optional[SensorSize] = None

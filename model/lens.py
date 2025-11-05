@@ -96,3 +96,93 @@ class Lens(BaseModel, table=True):
         focal_range = f"{self.min_focal_length}mm" if self.lens_type == LensType.PRIME else f"{self.min_focal_length}-{self.max_focal_length}mm"
         aperture = f"f/{self.max_aperture_min}" if self.is_constant_aperture else f"f/{self.max_aperture_min}-{self.max_aperture_max}"
         return f"{self.brand.name if self.brand else '未知品牌'} {self.model} {focal_range} {aperture}"
+
+
+# 镜头数据模型类
+class LensCreate(BaseModel):
+    """镜头创建数据模型"""
+    brand_id: int
+    mount_id: int
+    model: str
+    series: Optional[str] = None
+    min_focal_length: float
+    max_focal_length: float
+    max_aperture_min: float
+    max_aperture_max: Optional[float] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    diameter: Optional[float] = None
+    filter_size: Optional[float] = None
+    focus_type: FocusType = FocusType.AUTO
+    has_stabilization: bool = False
+    min_focus_distance: Optional[float] = None
+    magnification: Optional[float] = None
+    release_date: Optional[str] = None
+    release_price: Optional[float] = None
+    description: Optional[str] = None
+    is_active: bool = True
+
+
+class LensUpdate(BaseModel):
+    """镜头更新数据模型"""
+    brand_id: Optional[int] = None
+    mount_id: Optional[int] = None
+    model: Optional[str] = None
+    series: Optional[str] = None
+    min_focal_length: Optional[float] = None
+    max_focal_length: Optional[float] = None
+    max_aperture_min: Optional[float] = None
+    max_aperture_max: Optional[float] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    diameter: Optional[float] = None
+    filter_size: Optional[float] = None
+    focus_type: Optional[FocusType] = None
+    has_stabilization: Optional[bool] = None
+    min_focus_distance: Optional[float] = None
+    magnification: Optional[float] = None
+    release_date: Optional[str] = None
+    release_price: Optional[float] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class LensResponse(BaseModel):
+    """镜头响应数据模型"""
+    id: int
+    brand_id: int
+    mount_id: int
+    model: str
+    series: Optional[str] = None
+    min_focal_length: float
+    max_focal_length: float
+    lens_type: LensType
+    max_aperture_min: float
+    max_aperture_max: Optional[float] = None
+    is_constant_aperture: bool
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    diameter: Optional[float] = None
+    filter_size: Optional[float] = None
+    focus_type: FocusType
+    has_stabilization: bool
+    min_focus_distance: Optional[float] = None
+    magnification: Optional[float] = None
+    release_date: Optional[str] = None
+    release_price: Optional[float] = None
+    is_active: bool
+    description: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class LensQuery(BaseModel):
+    """镜头查询参数模型"""
+    skip: int = 0
+    limit: int = 100
+    is_active: Optional[bool] = None
+    brand_id: Optional[int] = None
+    mount_id: Optional[int] = None
+    lens_type: Optional[LensType] = None
+    focus_type: Optional[FocusType] = None
+    has_stabilization: Optional[bool] = None

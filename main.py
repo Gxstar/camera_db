@@ -82,11 +82,13 @@ async def custom_swagger_ui_html():
     )
 
 # 导入API路由
-from api import users, cameras, brands, auth
+from api import auth, users, cameras, brands, mounts, lenses
 
 # 注册路由
 app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
 app.include_router(users.router, prefix="/api/v1", tags=["users"])
 app.include_router(cameras.router, prefix="/api/v1", tags=["cameras"])
 app.include_router(brands.router, prefix="/api/v1", tags=["brands"])
+app.include_router(lenses.router, prefix="/api/v1", tags=["lenses"])
+app.include_router(mounts.router, prefix="/api/v1", tags=["mounts"])
 
