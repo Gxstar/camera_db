@@ -92,3 +92,16 @@ app.include_router(brands.router, prefix="/api/v1", tags=["brands"])
 app.include_router(lenses.router, prefix="/api/v1", tags=["lenses"])
 app.include_router(mounts.router, prefix="/api/v1", tags=["mounts"])
 
+# 启动服务器
+if __name__ == "__main__":
+    import uvicorn
+    
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    
+    print(f"🚀 启动服务器: http://{host}:{port}")
+    print(f"📚 API文档: http://{host}:{port}/docs")
+    print(f"🔧 健康检查: http://{host}:{port}/health")
+    
+    uvicorn.run(app, host=host, port=port)
+
