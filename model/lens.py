@@ -2,6 +2,7 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, TYPE_CHECKING
 from enum import Enum
+from datetime import datetime
 
 if TYPE_CHECKING:
     from model.brand import Brand
@@ -149,7 +150,6 @@ class LensUpdate(BaseModel):
 
 class LensResponse(BaseModel):
     """镜头响应数据模型"""
-    id: int
     brand_id: int
     mount_id: int
     model: str
@@ -172,8 +172,6 @@ class LensResponse(BaseModel):
     release_price: Optional[float] = None
     is_active: bool
     description: Optional[str] = None
-    created_at: str
-    updated_at: str
 
 
 class LensQuery(BaseModel):

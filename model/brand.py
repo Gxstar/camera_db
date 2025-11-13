@@ -2,6 +2,7 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 from model.brand_mount import BrandMount
+from datetime import datetime
 
 if TYPE_CHECKING:
     from model.camera import Camera
@@ -60,15 +61,12 @@ class BrandUpdate(BaseModel):
 
 class BrandResponse(BaseModel):
     """品牌响应数据模型"""
-    id: int
     name: str
     description: Optional[str]
     website: Optional[str]
     country: Optional[str]
     brand_type: str
     is_active: bool
-    create_time: str
-    update_time: str
 
 
 class BrandQuery(BaseModel):

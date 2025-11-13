@@ -2,6 +2,7 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, TYPE_CHECKING
 from enum import Enum
+from datetime import datetime
 
 if TYPE_CHECKING:
     from model.brand import Brand
@@ -112,7 +113,6 @@ class CameraUpdate(BaseModel):
 
 class CameraResponse(BaseModel):
     """相机响应数据模型"""
-    id: int
     brand_id: int
     mount_id: int
     sensor_size: Optional[SensorSize] = None
@@ -129,8 +129,6 @@ class CameraResponse(BaseModel):
     weight: Optional[float] = None
     is_active: bool = True
     description: Optional[str] = None
-    create_time: str
-    update_time: str
 
 
 class CameraQuery(BaseModel):

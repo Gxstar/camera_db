@@ -2,6 +2,7 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 from model.brand_mount import BrandMount
+from datetime import datetime
 
 if TYPE_CHECKING:
     from model.camera import Camera
@@ -62,14 +63,11 @@ class MountUpdate(BaseModel):
 
 class MountResponse(BaseModel):
     """卡口响应数据模型"""
-    id: int
     name: str
     flange_distance: Optional[float] = None
     release_year: Optional[int] = None
     is_active: bool = True
     description: Optional[str] = None
-    create_time: str
-    update_time: str
 
 
 class MountQuery(BaseModel):

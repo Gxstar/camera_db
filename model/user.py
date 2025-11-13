@@ -2,6 +2,7 @@ from model.base import BaseModel
 from sqlmodel import Field
 from typing import Optional
 from enum import Enum
+from datetime import datetime
 
 class UserRole(str, Enum):
     """用户角色枚举（简化权限体系）"""
@@ -40,13 +41,10 @@ class UserUpdate(BaseModel):
 # 用户响应模型（API输出）
 class UserResponse(BaseModel):
     """用户响应模型 - 用于API输出，不包含敏感信息"""
-    id: int
     username: str
     email: Optional[str]
     role: UserRole
     is_active: bool
-    create_time: str
-    update_time: str
     
     class Config:
         from_attributes = True

@@ -9,7 +9,6 @@ from sqlmodel import Session
 from dotenv import load_dotenv
 
 from database.engine import engine, create_db_and_tables
-from model import User, Camera
 
 # 加载环境变量
 load_dotenv()
