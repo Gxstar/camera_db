@@ -2,6 +2,7 @@
 """
 超级用户创建脚本 - 类似Django的createsuperuser命令
 支持交互式创建管理员用户和创建测试数据
+使用argon2算法进行密码哈希（现代、安全、无长度限制）
 """
 
 import sys
@@ -9,20 +10,7 @@ import getpass
 from sqlmodel import Session, select
 from database.engine import engine
 from model.user import User, UserRole
-import bcrypt
-
-def hash_password(password: str) -> str:
-    """使用bcrypt哈希密码"""
-    # bcrypt限制密码不能超过72字节，需要截断
-    if len(password.encode('utf-8')) > 72:
-        # 截断到72字节
-        password = password.encode('utf-8')[:72].decode('utf-8', 'ignore')
-        print("⚠️  密码过长，已自动截断到72字节")
-    
-    # 直接使用bcrypt库进行哈希
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+from services.user_service import hash_password
 
 def create_superuser():
     """交互式创建超级管理员用户"""
@@ -52,14 +40,6 @@ def create_superuser():
             if len(password) < 6:
                 print("❌ 密码长度至少6位，请重新输入")
                 continue
-            
-            # 检查密码是否超过bcrypt限制
-            if len(password.encode('utf-8')) > 72:
-                print("⚠️  密码过长（超过72字节），建议使用较短的密码")
-                print("💡 系统会自动截断，但建议重新输入较短的密码")
-                continue_choice = input("是否继续使用当前密码？(y/N): ").strip().lower()
-                if continue_choice not in ['y', 'yes']:
-                    continue
                 
             break
         

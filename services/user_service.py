@@ -5,11 +5,11 @@ from passlib.context import CryptContext
 
 from model.user import User, UserCreate, UserUpdate, UserResponse, UserRole
 
-# 使用bcrypt进行密码哈希（更安全）
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# 使用argon2算法（现代、安全、无长度限制）
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    """使用bcrypt哈希密码"""
+    """使用argon2算法加密密码"""
     return pwd_context.hash(password)
 
 def verify_password(password: str, hashed_password: str) -> bool:
