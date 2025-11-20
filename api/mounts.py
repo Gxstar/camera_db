@@ -14,7 +14,7 @@ from model.user import User
 router = APIRouter()
 
 
-@router.post("/", response_model=MountResponse, tags=["mounts"])
+@router.post("/mounts/", response_model=MountResponse, tags=["mounts"])
 async def create_mount(
     mount_data: MountCreate,
     db: Session = Depends(get_session),
@@ -38,7 +38,7 @@ async def create_mount(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/", response_model=List[MountResponse], tags=["mounts"])
+@router.get("/mounts/", response_model=List[MountResponse], tags=["mounts"])
 async def read_mounts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -50,7 +50,7 @@ async def read_mounts(
     return mounts
 
 
-@router.get("/{mount_id}", response_model=MountResponse, tags=["mounts"])
+@router.get("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
 async def read_mount(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -62,7 +62,7 @@ async def read_mount(
     return mount
 
 
-@router.get("/name/{name}", response_model=MountResponse, tags=["mounts"])
+@router.get("/mounts/name/{name}", response_model=MountResponse, tags=["mounts"])
 async def read_mount_by_name(
     name: str,
     db: Session = Depends(get_session)
@@ -74,7 +74,7 @@ async def read_mount_by_name(
     return mount
 
 
-@router.put("/{mount_id}", response_model=MountResponse, tags=["mounts"])
+@router.put("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
 async def update_mount(
     mount_id: int,
     mount_data: MountUpdate,
@@ -102,7 +102,7 @@ async def update_mount(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{mount_id}", tags=["mounts"])
+@router.delete("/mounts/{mount_id}", tags=["mounts"])
 async def delete_mount(
     mount_id: int,
     db: Session = Depends(get_session),
@@ -121,7 +121,7 @@ async def delete_mount(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.patch("/{mount_id}/activate", response_model=MountResponse, tags=["mounts"])
+@router.patch("/mounts/{mount_id}/activate", response_model=MountResponse, tags=["mounts"])
 async def activate_mount(
     mount_id: int,
     db: Session = Depends(get_session),
@@ -137,7 +137,7 @@ async def activate_mount(
     return mount
 
 
-@router.patch("/{mount_id}/deactivate", response_model=MountResponse, tags=["mounts"])
+@router.patch("/mounts/{mount_id}/deactivate", response_model=MountResponse, tags=["mounts"])
 async def deactivate_mount(
     mount_id: int,
     db: Session = Depends(get_session),
@@ -153,7 +153,7 @@ async def deactivate_mount(
     return mount
 
 
-@router.post("/{mount_id}/brands", response_model=BrandMountResponse, tags=["mounts"])
+@router.post("/mounts/{mount_id}/brands", response_model=BrandMountResponse, tags=["mounts"])
 async def add_brand_to_mount(
     mount_id: int,
     brand_data: BrandMountCreate,
@@ -177,7 +177,7 @@ async def add_brand_to_mount(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{mount_id}/brands/{brand_id}", tags=["mounts"])
+@router.delete("/mounts/{mount_id}/brands/{brand_id}", tags=["mounts"])
 async def remove_brand_from_mount(
     mount_id: int,
     brand_id: int,
@@ -194,7 +194,7 @@ async def remove_brand_from_mount(
     return {"message": "品牌卡口关联移除成功"}
 
 
-@router.get("/{mount_id}/brands", response_model=List[Brand], tags=["mounts"])
+@router.get("/mounts/{mount_id}/brands", response_model=List[Brand], tags=["mounts"])
 async def get_mount_brands(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -204,7 +204,7 @@ async def get_mount_brands(
     return brands
 
 
-@router.get("/{mount_id}/cameras", response_model=List[Camera], tags=["mounts"])
+@router.get("/mounts/{mount_id}/cameras", response_model=List[Camera], tags=["mounts"])
 async def get_mount_cameras(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -214,7 +214,7 @@ async def get_mount_cameras(
     return cameras
 
 
-@router.get("/{mount_id}/lenses", response_model=List[Lens], tags=["mounts"])
+@router.get("/mounts/{mount_id}/lenses", response_model=List[Lens], tags=["mounts"])
 async def get_mount_lenses(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -224,7 +224,7 @@ async def get_mount_lenses(
     return lenses
 
 
-@router.get("/search/", response_model=List[MountResponse], tags=["mounts"])
+@router.get("/mounts/search/", response_model=List[MountResponse], tags=["mounts"])
 async def search_mounts(
     query: str = Query(..., min_length=1, description="搜索关键词"),
     skip: int = Query(0, ge=0),
