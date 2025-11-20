@@ -17,7 +17,8 @@ def create_camera(
     current_user: User = Depends(get_current_admin_user)
 ):
     """创建相机（需要管理员权限）"""
-    return CameraService.create_camera(session, camera.dict())
+    camera_result = CameraService.create_camera(session, camera.dict())
+    return CameraResponse.model_validate(camera_result)
 
 @router.get("/cameras/", response_model=List[CameraResponse])
 def read_cameras(
@@ -30,17 +31,20 @@ def read_cameras(
     session: Session = Depends(get_session)
 ):
     """获取相机列表（允许所有用户访问）"""
-    return CameraService.get_cameras(session, skip, limit, is_active, brand_id, mount_id, sensor_size)
+    cameras = CameraService.get_cameras(session, skip, limit, is_active, brand_id, mount_id, sensor_size)
+    return [CameraResponse.model_validate(camera) for camera in cameras]
 
 @router.get("/cameras/{camera_id}", response_model=CameraResponse)
 def read_camera(camera_id: int, session: Session = Depends(get_session)):
     """根据ID获取相机信息（允许所有用户访问）"""
-    return CameraService.get_camera_by_id(session, camera_id)
+    camera = CameraService.get_camera_by_id(session, camera_id)
+    return CameraResponse.model_validate(camera)
 
 @router.put("/cameras/{camera_id}", response_model=CameraResponse)
 def update_camera(camera_id: int, camera_update: CameraUpdate, current_user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     """更新相机信息（需要管理员权限）"""
-    return CameraService.update_camera(session, camera_id, camera_update.dict(exclude_unset=True))
+    camera = CameraService.update_camera(session, camera_id, camera_update.dict(exclude_unset=True))
+    return CameraResponse.model_validate(camera)
 
 @router.delete("/cameras/{camera_id}")
 def delete_camera(camera_id: int, current_user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):

@@ -17,7 +17,8 @@ def create_lens(
     current_user: User = Depends(get_current_admin_user)
 ):
     """创建镜头（需要管理员权限）"""
-    return LensService.create_lens(session, lens.dict())
+    lens_result = LensService.create_lens(session, lens.dict())
+    return LensResponse.model_validate(lens_result)
 
 @router.get("/lenses/", response_model=List[LensResponse])
 def read_lenses(
@@ -32,20 +33,23 @@ def read_lenses(
     session: Session = Depends(get_session)
 ):
     """获取镜头列表（允许所有用户访问）"""
-    return LensService.get_lenses(
+    lenses = LensService.get_lenses(
         session, skip, limit, is_active, brand_id, mount_id, 
         lens_type, focus_type, has_stabilization
     )
+    return [LensResponse.model_validate(lens) for lens in lenses]
 
 @router.get("/lenses/{lens_id}", response_model=LensResponse)
 def read_lens(lens_id: int, session: Session = Depends(get_session)):
     """根据ID获取镜头信息（允许所有用户访问）"""
-    return LensService.get_lens_by_id(session, lens_id)
+    lens = LensService.get_lens_by_id(session, lens_id)
+    return LensResponse.model_validate(lens)
 
 @router.get("/lenses/model/{model}", response_model=LensResponse)
 def read_lens_by_model(model: str, session: Session = Depends(get_session)):
     """根据型号获取镜头信息（允许所有用户访问）"""
-    return LensService.get_lens_by_model(session, model)
+    lens = LensService.get_lens_by_model(session, model)
+    return LensResponse.model_validate(lens)
 
 @router.put("/lenses/{lens_id}", response_model=LensResponse)
 def update_lens(
@@ -55,7 +59,8 @@ def update_lens(
     session: Session = Depends(get_session)
 ):
     """更新镜头信息（需要管理员权限）"""
-    return LensService.update_lens(session, lens_id, lens_update.dict(exclude_unset=True))
+    lens = LensService.update_lens(session, lens_id, lens_update.dict(exclude_unset=True))
+    return LensResponse.model_validate(lens)
 
 @router.delete("/lenses/{lens_id}")
 def delete_lens(

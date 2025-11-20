@@ -33,7 +33,7 @@ async def create_mount(
             description=mount_data.description,
             is_active=mount_data.is_active
         )
-        return mount
+        return MountResponse.model_validate(mount)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -47,7 +47,7 @@ async def read_mounts(
 ):
     """获取卡口列表（公开访问）"""
     mounts = MountService.get_mounts(db, skip=skip, limit=limit, is_active=is_active)
-    return mounts
+    return [MountResponse.model_validate(mount) for mount in mounts]
 
 
 @router.get("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
@@ -59,7 +59,7 @@ async def read_mount(
     mount = MountService.get_mount_by_id(db, mount_id)
     if not mount:
         raise HTTPException(status_code=404, detail="卡口未找到")
-    return mount
+    return MountResponse.model_validate(mount)
 
 
 @router.get("/mounts/name/{name}", response_model=MountResponse, tags=["mounts"])
@@ -71,7 +71,7 @@ async def read_mount_by_name(
     mount = MountService.get_mount_by_name(db, name)
     if not mount:
         raise HTTPException(status_code=404, detail="卡口未找到")
-    return mount
+    return MountResponse.model_validate(mount)
 
 
 @router.put("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
@@ -97,7 +97,7 @@ async def update_mount(
         )
         if not mount:
             raise HTTPException(status_code=404, detail="卡口未找到")
-        return mount
+        return MountResponse.model_validate(mount)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -134,7 +134,7 @@ async def activate_mount(
     mount = MountService.activate_mount(db, mount_id)
     if not mount:
         raise HTTPException(status_code=404, detail="卡口未找到")
-    return mount
+    return MountResponse.model_validate(mount)
 
 
 @router.patch("/mounts/{mount_id}/deactivate", response_model=MountResponse, tags=["mounts"])
@@ -150,7 +150,7 @@ async def deactivate_mount(
     mount = MountService.deactivate_mount(db, mount_id)
     if not mount:
         raise HTTPException(status_code=404, detail="卡口未找到")
-    return mount
+    return MountResponse.model_validate(mount)
 
 
 @router.post("/mounts/{mount_id}/brands", response_model=BrandMountResponse, tags=["mounts"])
@@ -233,4 +233,4 @@ async def search_mounts(
 ):
     """搜索卡口（公开访问）"""
     mounts = MountService.search_mounts(db, query, skip=skip, limit=limit)
-    return mounts
+    return [MountResponse.model_validate(mount) for mount in mounts]
