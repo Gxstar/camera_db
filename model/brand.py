@@ -2,7 +2,6 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 from model.brand_mount import BrandMount
-from datetime import datetime
 
 if TYPE_CHECKING:
     from model.camera import Camera
@@ -32,9 +31,6 @@ class Brand(BaseModel, table=True):
     # 多对多关系：品牌支持的卡口
     mounts: List["Mount"] = Relationship(back_populates="brands", link_model=BrandMount, sa_relationship_kwargs={"lazy": "selectin"})
     
-    class Config:
-        from_attributes = True
-        
     def __str__(self):
         return f"{self.name} ({self.country})" if self.country else self.name
 

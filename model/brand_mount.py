@@ -21,6 +21,3 @@ class BrandMount(SQLModel, table=True):
     # 关联信息
     is_primary: bool = Field(default=False, description="是否为主要卡口")
     compatibility_notes: str = Field(default="", description="兼容性说明")
-    
-    class Config:
-        from_attributes = True

@@ -43,8 +43,7 @@ def read_user(user_id: int, current_user: User = Depends(get_current_user), sess
 @router.put("/users/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, user_update: UserUpdate, current_user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     """更新用户信息（需要管理员权限）"""
-    user = UserService.get_user_by_id(session, user_id)
-    updated_user = UserService.update_user(session, user, user_update)
+    updated_user = UserService.update_user(session, user_id, user_update)
     return UserResponse.model_validate(updated_user)
 
 @router.delete("/users/{user_id}")

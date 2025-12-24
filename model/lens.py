@@ -2,7 +2,6 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, TYPE_CHECKING
 from enum import Enum
-from datetime import datetime
 
 if TYPE_CHECKING:
     from model.brand import Brand
@@ -72,9 +71,6 @@ class Lens(BaseModel, table=True):
     
     # 描述信息
     description: Optional[str] = Field(default=None, description="备注说明")
-
-    class Config:
-        from_attributes = True
         
     def __init__(self, **kwargs):
         # 自动判断镜头类型
@@ -96,7 +92,8 @@ class Lens(BaseModel, table=True):
     def __str__(self):
         focal_range = f"{self.min_focal_length}mm" if self.lens_type == LensType.PRIME else f"{self.min_focal_length}-{self.max_focal_length}mm"
         aperture = f"f/{self.max_aperture_min}" if self.is_constant_aperture else f"f/{self.max_aperture_min}-{self.max_aperture_max}"
-        return f"{self.brand.name if self.brand else '未知品牌'} {self.model} {focal_range} {aperture}"
+        brand_name = getattr(getattr(self, 'brand', None), 'name', None) or "未知品牌"
+        return f"{brand_name} {self.model} {focal_range} {aperture}"
 
 
 # 镜头数据模型类

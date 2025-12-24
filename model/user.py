@@ -45,9 +45,6 @@ class UserResponse(BaseModel):
     email: Optional[str]
     role: UserRole
     is_active: bool
-    
-    class Config:
-        from_attributes = True
 
 # 用户查询模型（API查询参数）
 class UserQuery(BaseModel):

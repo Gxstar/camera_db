@@ -17,22 +17,19 @@ router = APIRouter()
 @router.post("/mounts/", response_model=MountResponse, tags=["mounts"])
 async def create_mount(
     mount_data: MountCreate,
-    db: Session = Depends(get_session),
+    session: Session = Depends(get_session),
     current_user: User = Depends(get_current_admin_user)
 ):
     """创建卡口（需要管理员权限）"""
-    try:
-        mount = MountService.create_mount(
-            db=db,
-            name=mount_data.name,
-            flange_distance=mount_data.flange_distance,
-            release_year=mount_data.release_year,
-            description=mount_data.description,
-            is_active=mount_data.is_active
-        )
-        return MountResponse.model_validate(mount)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    mount = MountService.create_mount(
+        session=session,
+        name=mount_data.name,
+        flange_distance=mount_data.flange_distance,
+        release_year=mount_data.release_year,
+        description=mount_data.description,
+        is_active=mount_data.is_active
+    )
+    return MountResponse.model_validate(mount)
 
 
 @router.get("/mounts/", response_model=List[MountResponse], tags=["mounts"])
@@ -40,22 +37,20 @@ async def read_mounts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     is_active: Optional[bool] = None,
-    db: Session = Depends(get_session)
+    session: Session = Depends(get_session)
 ):
     """获取卡口列表（公开访问）"""
-    mounts = MountService.get_mounts(db, skip=skip, limit=limit, is_active=is_active)
+    mounts = MountService.get_mounts(session=session, skip=skip, limit=limit, is_active=is_active)
     return [MountResponse.model_validate(mount) for mount in mounts]
 
 
 @router.get("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
 async def read_mount(
     mount_id: int,
-    db: Session = Depends(get_session)
+    session: Session = Depends(get_session)
 ):
-    """根据ID获取卡口详情（公开访问）"""
-    mount = MountService.get_mount_by_id(db, mount_id)
-    if not mount:
-        raise HTTPException(status_code=404, detail="卡口未找到")
+    """获取单个卡口"""
+    mount = MountService.get_mount_by_id(session=session, mount_id=mount_id)
     return MountResponse.model_validate(mount)
 
 
@@ -75,41 +70,31 @@ async def read_mount_by_name(
 async def update_mount(
     mount_id: int,
     mount_data: MountUpdate,
-    db: Session = Depends(get_session),
+    session: Session = Depends(get_session),
     current_user: User = Depends(get_current_admin_user)
 ):
     """更新卡口信息（需要管理员权限）"""
-    try:
-        mount = MountService.update_mount(
-            db=db,
-            mount_id=mount_id,
-            name=mount_data.name,
-            flange_distance=mount_data.flange_distance,
-            release_year=mount_data.release_year,
-            description=mount_data.description,
-            is_active=mount_data.is_active
-        )
-        if not mount:
-            raise HTTPException(status_code=404, detail="卡口未找到")
-        return MountResponse.model_validate(mount)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    mount = MountService.update_mount(
+        session=session,
+        mount_id=mount_id,
+        name=mount_data.name,
+        flange_distance=mount_data.flange_distance,
+        release_year=mount_data.release_year,
+        description=mount_data.description,
+        is_active=mount_data.is_active
+    )
+    return MountResponse.model_validate(mount)
 
 
 @router.delete("/mounts/{mount_id}", tags=["mounts"])
 async def delete_mount(
     mount_id: int,
-    db: Session = Depends(get_session),
+    session: Session = Depends(get_session),
     current_user: User = Depends(get_current_admin_user)
 ):
     """删除卡口（需要管理员权限）"""
-    try:
-        success = MountService.delete_mount(db, mount_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="卡口未找到")
-        return {"message": "卡口删除成功"}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    MountService.delete_mount(session=session, mount_id=mount_id)
+    return {"message": "卡口删除成功"}
 
 
 @router.patch("/mounts/{mount_id}/activate", response_model=MountResponse, tags=["mounts"])

@@ -2,7 +2,6 @@ from model.base import BaseModel
 from sqlmodel import Field, Relationship
 from typing import Optional, TYPE_CHECKING
 from enum import Enum
-from datetime import datetime
 
 if TYPE_CHECKING:
     from model.brand import Brand
@@ -67,9 +66,6 @@ class Camera(BaseModel, table=True):
     
     # 描述信息
     description: Optional[str] = Field(default=None, description="备注说明")
-
-    class Config:
-        from_attributes = True
 
 
 class CameraCreate(BaseModel):
