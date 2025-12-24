@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from model.camera import Camera, SensorSize
 from model.brand import Brand
 from model.mount import Mount
+from services.validation_service import ValidationService
 
 
 class CameraService:
@@ -14,30 +15,17 @@ class CameraService:
     def create_camera(session: Session, camera_data: Dict[str, Any]) -> Camera:
         """创建相机"""
         # 检查相机型号是否已存在
-        existing_camera = session.exec(
-            select(Camera).where(Camera.model == camera_data.get("model"))
-        ).first()
-        if existing_camera:
+        if ValidationService.check_camera_model_exists(session, camera_data.get("model")):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="相机型号已存在"
             )
         
         # 检查品牌是否存在
-        brand = session.get(Brand, camera_data.get("brand_id"))
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="品牌不存在"
-            )
+        ValidationService.validate_brand_exists(session, camera_data.get("brand_id"))
         
         # 检查卡口是否存在
-        mount = session.get(Mount, camera_data.get("mount_id"))
-        if not mount:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="卡口不存在"
-            )
+        ValidationService.validate_mount_exists(session, camera_data.get("mount_id"))
         
         camera = Camera(**camera_data)
         session.add(camera)
@@ -76,41 +64,21 @@ class CameraService:
     @staticmethod
     def get_camera_by_id(session: Session, camera_id: int) -> Camera:
         """根据ID获取相机"""
-        camera = session.get(Camera, camera_id)
-        if not camera:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="相机不存在"
-            )
-        return camera
+        return ValidationService.validate_camera_exists(session, camera_id)
     
     @staticmethod
     def get_camera_by_model(session: Session, model: str) -> Camera:
         """根据型号获取相机"""
-        camera = session.exec(select(Camera).where(Camera.model == model)).first()
-        if not camera:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="相机不存在"
-            )
-        return camera
+        return ValidationService.validate_camera_by_model_exists(session, model)
     
     @staticmethod
     def update_camera(session: Session, camera_id: int, camera_data: Dict[str, Any]) -> Camera:
         """更新相机信息"""
-        camera = session.get(Camera, camera_id)
-        if not camera:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="相机不存在"
-            )
+        camera = ValidationService.validate_camera_exists(session, camera_id)
         
         # 如果更新型号，检查型号是否已存在
         if "model" in camera_data and camera_data["model"] != camera.model:
-            existing_camera = session.exec(
-                select(Camera).where(Camera.model == camera_data["model"])
-            ).first()
-            if existing_camera:
+            if ValidationService.check_camera_model_exists(session, camera_data["model"], exclude_id=camera_id):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="相机型号已存在"
@@ -118,21 +86,11 @@ class CameraService:
         
         # 如果更新品牌，检查品牌是否存在
         if "brand_id" in camera_data:
-            brand = session.get(Brand, camera_data["brand_id"])
-            if not brand:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="品牌不存在"
-                )
+            ValidationService.validate_brand_exists(session, camera_data["brand_id"])
         
         # 如果更新卡口，检查卡口是否存在
         if "mount_id" in camera_data:
-            mount = session.get(Mount, camera_data["mount_id"])
-            if not mount:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="卡口不存在"
-                )
+            ValidationService.validate_mount_exists(session, camera_data["mount_id"])
         
         # 更新相机信息
         for key, value in camera_data.items():
@@ -146,12 +104,7 @@ class CameraService:
     @staticmethod
     def delete_camera(session: Session, camera_id: int) -> Dict[str, str]:
         """删除相机"""
-        camera = session.get(Camera, camera_id)
-        if not camera:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="相机不存在"
-            )
+        camera = ValidationService.validate_camera_exists(session, camera_id)
         
         session.delete(camera)
         session.commit()
@@ -160,12 +113,7 @@ class CameraService:
     @staticmethod
     def set_camera_active_status(session: Session, camera_id: int, is_active: bool) -> Dict[str, str]:
         """设置相机激活状态"""
-        camera = session.get(Camera, camera_id)
-        if not camera:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="相机不存在"
-            )
+        camera = ValidationService.validate_camera_exists(session, camera_id)
         
         camera.is_active = is_active
         session.add(camera)

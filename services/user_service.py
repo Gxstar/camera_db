@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
 from model.user import User, UserCreate, UserUpdate, UserResponse, UserRole
+from services.validation_service import ValidationService
 
 # 使用argon2算法（现代、安全、无长度限制）
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
@@ -24,8 +25,7 @@ class UserService:
     def create_user(session: Session, user_create: UserCreate) -> User:
         """创建新用户"""
         # 检查用户名是否已存在
-        existing_user = session.exec(select(User).where(User.username == user_create.username)).first()
-        if existing_user:
+        if ValidationService.check_username_exists(session, user_create.username):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="用户名已存在"
@@ -33,8 +33,7 @@ class UserService:
         
         # 检查邮箱是否已存在（如果提供了邮箱）
         if user_create.email:
-            existing_email = session.exec(select(User).where(User.email == user_create.email)).first()
-            if existing_email:
+            if ValidationService.check_email_exists(session, user_create.email):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="邮箱已存在"
@@ -81,21 +80,14 @@ class UserService:
     @staticmethod
     def get_user_by_id(session: Session, user_id: int) -> User:
         """根据ID获取用户"""
-        user = session.get(User, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="用户不存在"
-            )
-        return user
+        return ValidationService.validate_user_exists(session, user_id)
     
     @staticmethod
     def update_user(session: Session, user: User, user_update: UserUpdate) -> User:
         """更新用户信息"""
         # 检查用户名是否冲突（如果更新用户名）
         if user_update.username and user_update.username != user.username:
-            existing_user = session.exec(select(User).where(User.username == user_update.username)).first()
-            if existing_user:
+            if ValidationService.check_username_exists(session, user_update.username, exclude_id=user.id):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="用户名已存在"
@@ -103,8 +95,7 @@ class UserService:
         
         # 检查邮箱是否冲突（如果更新邮箱）
         if user_update.email and user_update.email != user.email:
-            existing_email = session.exec(select(User).where(User.email == user_update.email)).first()
-            if existing_email:
+            if ValidationService.check_email_exists(session, user_update.email, exclude_id=user.id):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="邮箱已存在"

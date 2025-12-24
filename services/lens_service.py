@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from model.lens import Lens, LensType, FocusType
 from model.brand import Brand
 from model.mount import Mount
+from services.validation_service import ValidationService
 
 
 class LensService:
@@ -14,30 +15,17 @@ class LensService:
     def create_lens(session: Session, lens_data: Dict[str, Any]) -> Lens:
         """创建镜头"""
         # 检查镜头型号是否已存在
-        existing_lens = session.exec(
-            select(Lens).where(Lens.model == lens_data.get("model"))
-        ).first()
-        if existing_lens:
+        if ValidationService.check_lens_model_exists(session, lens_data.get("model")):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="镜头型号已存在"
             )
         
         # 检查品牌是否存在
-        brand = session.get(Brand, lens_data.get("brand_id"))
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="品牌不存在"
-            )
+        ValidationService.validate_brand_exists(session, lens_data.get("brand_id"))
         
         # 检查卡口是否存在
-        mount = session.get(Mount, lens_data.get("mount_id"))
-        if not mount:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="卡口不存在"
-            )
+        ValidationService.validate_mount_exists(session, lens_data.get("mount_id"))
         
         # 验证焦距范围
         min_focal = lens_data.get("min_focal_length")
@@ -102,41 +90,21 @@ class LensService:
     @staticmethod
     def get_lens_by_id(session: Session, lens_id: int) -> Lens:
         """根据ID获取镜头"""
-        lens = session.get(Lens, lens_id)
-        if not lens:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="镜头不存在"
-            )
-        return lens
+        return ValidationService.validate_lens_exists(session, lens_id)
     
     @staticmethod
     def get_lens_by_model(session: Session, model: str) -> Lens:
         """根据型号获取镜头"""
-        lens = session.exec(select(Lens).where(Lens.model == model)).first()
-        if not lens:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="镜头不存在"
-            )
-        return lens
+        return ValidationService.validate_lens_by_model_exists(session, model)
     
     @staticmethod
     def update_lens(session: Session, lens_id: int, lens_data: Dict[str, Any]) -> Lens:
         """更新镜头信息"""
-        lens = session.get(Lens, lens_id)
-        if not lens:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="镜头不存在"
-            )
+        lens = ValidationService.validate_lens_exists(session, lens_id)
         
         # 如果更新型号，检查型号是否已存在
         if "model" in lens_data and lens_data["model"] != lens.model:
-            existing_lens = session.exec(
-                select(Lens).where(Lens.model == lens_data["model"])
-            ).first()
-            if existing_lens:
+            if ValidationService.check_lens_model_exists(session, lens_data["model"], exclude_id=lens_id):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="镜头型号已存在"
@@ -144,21 +112,11 @@ class LensService:
         
         # 如果更新品牌，检查品牌是否存在
         if "brand_id" in lens_data:
-            brand = session.get(Brand, lens_data["brand_id"])
-            if not brand:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="品牌不存在"
-                )
+            ValidationService.validate_brand_exists(session, lens_data["brand_id"])
         
         # 如果更新卡口，检查卡口是否存在
         if "mount_id" in lens_data:
-            mount = session.get(Mount, lens_data["mount_id"])
-            if not mount:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="卡口不存在"
-                )
+            ValidationService.validate_mount_exists(session, lens_data["mount_id"])
         
         # 验证焦距范围
         if "min_focal_length" in lens_data and "max_focal_length" in lens_data:
@@ -182,12 +140,7 @@ class LensService:
     @staticmethod
     def delete_lens(session: Session, lens_id: int) -> Dict[str, str]:
         """删除镜头"""
-        lens = session.get(Lens, lens_id)
-        if not lens:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="镜头不存在"
-            )
+        lens = ValidationService.validate_lens_exists(session, lens_id)
         
         session.delete(lens)
         session.commit()
@@ -196,12 +149,7 @@ class LensService:
     @staticmethod
     def set_lens_active_status(session: Session, lens_id: int, is_active: bool) -> Dict[str, str]:
         """设置镜头激活状态"""
-        lens = session.get(Lens, lens_id)
-        if not lens:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="镜头不存在"
-            )
+        lens = ValidationService.validate_lens_exists(session, lens_id)
         
         lens.is_active = is_active
         session.add(lens)

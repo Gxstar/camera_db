@@ -8,7 +8,7 @@ from model.brand import Brand
 from model.camera import Camera
 from model.lens import Lens
 from services.mount_service import MountService
-from api.auth import get_current_user, UserRole
+from api.auth import get_current_user, get_current_admin_user
 from model.user import User
 
 router = APIRouter()
@@ -18,12 +18,9 @@ router = APIRouter()
 async def create_mount(
     mount_data: MountCreate,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """创建卡口（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     try:
         mount = MountService.create_mount(
             db=db,
@@ -79,12 +76,9 @@ async def update_mount(
     mount_id: int,
     mount_data: MountUpdate,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """更新卡口信息（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     try:
         mount = MountService.update_mount(
             db=db,
@@ -106,12 +100,9 @@ async def update_mount(
 async def delete_mount(
     mount_id: int,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """删除卡口（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     try:
         success = MountService.delete_mount(db, mount_id)
         if not success:
@@ -125,12 +116,9 @@ async def delete_mount(
 async def activate_mount(
     mount_id: int,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """激活卡口（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     mount = MountService.activate_mount(db, mount_id)
     if not mount:
         raise HTTPException(status_code=404, detail="卡口未找到")
@@ -141,12 +129,9 @@ async def activate_mount(
 async def deactivate_mount(
     mount_id: int,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """停用卡口（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     mount = MountService.deactivate_mount(db, mount_id)
     if not mount:
         raise HTTPException(status_code=404, detail="卡口未找到")
@@ -158,12 +143,9 @@ async def add_brand_to_mount(
     mount_id: int,
     brand_data: BrandMountCreate,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """为卡口添加品牌支持（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     try:
         brand_mount = MountService.add_brand_to_mount(
             db=db,
@@ -182,12 +164,9 @@ async def remove_brand_from_mount(
     mount_id: int,
     brand_id: int,
     db: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """从卡口移除品牌支持（需要管理员权限）"""
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="需要管理员权限")
-    
     success = MountService.remove_brand_from_mount(db, mount_id, brand_id)
     if not success:
         raise HTTPException(status_code=404, detail="品牌卡口关联未找到")

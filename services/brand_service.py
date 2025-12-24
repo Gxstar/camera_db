@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from fastapi import HTTPException, status
 
 from model.brand import Brand
+from services.validation_service import ValidationService
 
 
 class BrandService:
@@ -12,8 +13,7 @@ class BrandService:
     def create_brand(session: Session, brand_data: dict) -> Brand:
         """创建品牌"""
         # 检查品牌名称是否已存在
-        existing_brand = session.exec(select(Brand).where(Brand.name == brand_data["name"])).first()
-        if existing_brand:
+        if ValidationService.check_brand_name_exists(session, brand_data["name"]):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="品牌名称已存在"
@@ -49,39 +49,21 @@ class BrandService:
     @staticmethod
     def get_brand_by_id(session: Session, brand_id: int) -> Brand:
         """根据ID获取品牌"""
-        brand = session.get(Brand, brand_id)
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="品牌不存在"
-            )
-        return brand
+        return ValidationService.validate_brand_exists(session, brand_id)
 
     @staticmethod
     def get_brand_by_name(session: Session, brand_name: str) -> Brand:
         """根据品牌名称获取品牌"""
-        brand = session.exec(select(Brand).where(Brand.name == brand_name)).first()
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="品牌不存在"
-            )
-        return brand
+        return ValidationService.validate_brand_by_name_exists(session, brand_name)
 
     @staticmethod
     def update_brand(session: Session, brand_id: int, brand_update_data: dict) -> Brand:
         """更新品牌信息"""
-        brand = session.get(Brand, brand_id)
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="品牌不存在"
-            )
+        brand = ValidationService.validate_brand_exists(session, brand_id)
         
         # 检查品牌名称是否与其他品牌冲突
         if "name" in brand_update_data and brand_update_data["name"] != brand.name:
-            existing_brand = session.exec(select(Brand).where(Brand.name == brand_update_data["name"])).first()
-            if existing_brand:
+            if ValidationService.check_brand_name_exists(session, brand_update_data["name"], exclude_id=brand_id):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="品牌名称已存在"
@@ -99,12 +81,7 @@ class BrandService:
     @staticmethod
     def delete_brand(session: Session, brand_id: int) -> dict:
         """删除品牌"""
-        brand = session.get(Brand, brand_id)
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="品牌不存在"
-            )
+        brand = ValidationService.validate_brand_exists(session, brand_id)
         
         # 检查是否有相机关联该品牌
         from model.camera import Camera
@@ -122,12 +99,7 @@ class BrandService:
     @staticmethod
     def set_brand_active_status(session: Session, brand_id: int, is_active: bool) -> dict:
         """设置品牌激活状态"""
-        brand = session.get(Brand, brand_id)
-        if not brand:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="品牌不存在"
-            )
+        brand = ValidationService.validate_brand_exists(session, brand_id)
         
         brand.is_active = is_active
         session.add(brand)
