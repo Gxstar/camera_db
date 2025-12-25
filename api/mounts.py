@@ -14,7 +14,7 @@ from model.user import User
 router = APIRouter()
 
 
-@router.post("/mounts/", response_model=MountResponse, tags=["mounts"])
+@router.post("/mounts/", response_model=MountResponse, tags=["mounts"], summary="创建卡口")
 async def create_mount(
     mount_data: MountCreate,
     session: Session = Depends(get_session),
@@ -32,7 +32,7 @@ async def create_mount(
     return MountResponse.model_validate(mount)
 
 
-@router.get("/mounts/", response_model=List[MountResponse], tags=["mounts"])
+@router.get("/mounts/", response_model=List[MountResponse], tags=["mounts"], summary="获取卡口列表")
 async def read_mounts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -44,7 +44,7 @@ async def read_mounts(
     return [MountResponse.model_validate(mount) for mount in mounts]
 
 
-@router.get("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
+@router.get("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"], summary="获取卡口详情")
 async def read_mount(
     mount_id: int,
     session: Session = Depends(get_session)
@@ -54,7 +54,7 @@ async def read_mount(
     return MountResponse.model_validate(mount)
 
 
-@router.get("/mounts/name/{name}", response_model=MountResponse, tags=["mounts"])
+@router.get("/mounts/name/{name}", response_model=MountResponse, tags=["mounts"], summary="根据名称获取卡口")
 async def read_mount_by_name(
     name: str,
     db: Session = Depends(get_session)
@@ -66,7 +66,7 @@ async def read_mount_by_name(
     return MountResponse.model_validate(mount)
 
 
-@router.put("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"])
+@router.put("/mounts/{mount_id}", response_model=MountResponse, tags=["mounts"], summary="更新卡口")
 async def update_mount(
     mount_id: int,
     mount_data: MountUpdate,
@@ -86,7 +86,7 @@ async def update_mount(
     return MountResponse.model_validate(mount)
 
 
-@router.delete("/mounts/{mount_id}", tags=["mounts"])
+@router.delete("/mounts/{mount_id}", tags=["mounts"], summary="删除卡口")
 async def delete_mount(
     mount_id: int,
     session: Session = Depends(get_session),
@@ -97,7 +97,7 @@ async def delete_mount(
     return {"message": "卡口删除成功"}
 
 
-@router.patch("/mounts/{mount_id}/activate", response_model=MountResponse, tags=["mounts"])
+@router.patch("/mounts/{mount_id}/activate", response_model=MountResponse, tags=["mounts"], summary="激活卡口")
 async def activate_mount(
     mount_id: int,
     db: Session = Depends(get_session),
@@ -110,7 +110,7 @@ async def activate_mount(
     return MountResponse.model_validate(mount)
 
 
-@router.patch("/mounts/{mount_id}/deactivate", response_model=MountResponse, tags=["mounts"])
+@router.patch("/mounts/{mount_id}/deactivate", response_model=MountResponse, tags=["mounts"], summary="停用卡口")
 async def deactivate_mount(
     mount_id: int,
     db: Session = Depends(get_session),
@@ -123,7 +123,7 @@ async def deactivate_mount(
     return MountResponse.model_validate(mount)
 
 
-@router.post("/mounts/{mount_id}/brands", response_model=BrandMountResponse, tags=["mounts"])
+@router.post("/mounts/{mount_id}/brands", response_model=BrandMountResponse, tags=["mounts"], summary="为卡口添加品牌支持")
 async def add_brand_to_mount(
     mount_id: int,
     brand_data: BrandMountCreate,
@@ -144,7 +144,7 @@ async def add_brand_to_mount(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/mounts/{mount_id}/brands/{brand_id}", tags=["mounts"])
+@router.delete("/mounts/{mount_id}/brands/{brand_id}", tags=["mounts"], summary="移除卡口的品牌支持")
 async def remove_brand_from_mount(
     mount_id: int,
     brand_id: int,
@@ -158,7 +158,7 @@ async def remove_brand_from_mount(
     return {"message": "品牌卡口关联移除成功"}
 
 
-@router.get("/mounts/{mount_id}/brands", response_model=List[Brand], tags=["mounts"])
+@router.get("/mounts/{mount_id}/brands", response_model=List[Brand], tags=["mounts"], summary="获取卡口的品牌列表")
 async def get_mount_brands(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -168,7 +168,7 @@ async def get_mount_brands(
     return brands
 
 
-@router.get("/mounts/{mount_id}/cameras", response_model=List[Camera], tags=["mounts"])
+@router.get("/mounts/{mount_id}/cameras", response_model=List[Camera], tags=["mounts"], summary="获取卡口的相机列表")
 async def get_mount_cameras(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -178,7 +178,7 @@ async def get_mount_cameras(
     return cameras
 
 
-@router.get("/mounts/{mount_id}/lenses", response_model=List[Lens], tags=["mounts"])
+@router.get("/mounts/{mount_id}/lenses", response_model=List[Lens], tags=["mounts"], summary="获取卡口的镜头列表")
 async def get_mount_lenses(
     mount_id: int,
     db: Session = Depends(get_session)
@@ -188,9 +188,9 @@ async def get_mount_lenses(
     return lenses
 
 
-@router.get("/mounts/search/", response_model=List[MountResponse], tags=["mounts"])
+@router.get("/mounts/search/", response_model=List[MountResponse], tags=["mounts"], summary="搜索卡口")
 async def search_mounts(
-    query: str = Query(..., min_length=1, description="搜索关键词"),
+    query: str = Query(...),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_session)

@@ -77,7 +77,7 @@ async def get_current_admin_user(current_user: User = Depends(get_current_user))
 # 现在只有管理员和普通用户两个角色，不再需要超级管理员验证
 
 # 用户认证
-@router.post("/auth/login")
+@router.post("/auth/login", summary="用户登录")
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session)
@@ -119,7 +119,7 @@ def login_for_access_token(
     }
 
 # 刷新令牌
-@router.post("/auth/refresh")
+@router.post("/auth/refresh", summary="刷新访问令牌")
 def refresh_access_token(current_user: User = Depends(get_current_user)):
     """刷新访问令牌"""
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -134,7 +134,7 @@ def refresh_access_token(current_user: User = Depends(get_current_user)):
     }
 
 # 获取当前用户信息
-@router.get("/auth/me")
+@router.get("/auth/me", summary="获取当前用户信息")
 def read_users_me(current_user: User = Depends(get_current_user)):
     """获取当前登录用户信息"""
     return {

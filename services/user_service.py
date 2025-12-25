@@ -102,7 +102,7 @@ class UserService:
                 )
         
         # 更新用户信息
-        update_data = user_update.dict(exclude_unset=True)
+        update_data = user_update.model_dump(exclude_unset=True)
         
         # 如果更新密码，需要重新加密
         if "password" in update_data:
