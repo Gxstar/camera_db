@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlmodel import Session, select
 
 from database.engine import get_session
@@ -7,6 +7,7 @@ from model.camera import Camera, CameraCreate, CameraUpdate, CameraResponse, Cam
 from model.user import User
 from api.auth import get_current_user, get_current_admin_user
 from services.camera_service import CameraService
+from services.import_service import ImportService
 
 router = APIRouter()
 
@@ -19,6 +20,16 @@ def create_camera(
     """创建相机（需要管理员权限）"""
     camera_result = CameraService.create_camera(session, camera.model_dump())
     return CameraResponse.model_validate(camera_result)
+
+@router.post("/cameras/import", summary="批量导入相机")
+async def import_cameras(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """从 Excel 文件批量导入相机（需要管理员权限）"""
+    content = await file.read()
+    return ImportService.import_cameras(session, content)
 
 @router.get("/cameras/", response_model=List[CameraResponse], summary="获取相机列表")
 def read_cameras(

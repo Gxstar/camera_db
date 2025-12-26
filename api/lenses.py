@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlmodel import Session
 
 from database.engine import get_session
@@ -7,6 +7,7 @@ from model.lens import Lens, LensCreate, LensUpdate, LensResponse, LensQuery, Le
 from model.user import User
 from api.auth import get_current_user, get_current_admin_user
 from services.lens_service import LensService
+from services.import_service import ImportService
 
 router = APIRouter()
 
@@ -19,6 +20,16 @@ def create_lens(
     """创建镜头（需要管理员权限）"""
     lens_result = LensService.create_lens(session, lens.model_dump())
     return LensResponse.model_validate(lens_result)
+
+@router.post("/lenses/import", summary="批量导入镜头")
+async def import_lenses(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """从 Excel 文件批量导入镜头（需要管理员权限）"""
+    content = await file.read()
+    return ImportService.import_lenses(session, content)
 
 @router.get("/lenses/", response_model=List[LensResponse], summary="获取镜头列表")
 def read_lenses(

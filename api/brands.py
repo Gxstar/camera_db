@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlmodel import Session
 
 from database.engine import get_session
@@ -7,6 +7,7 @@ from model.brand import Brand, BrandCreate, BrandUpdate, BrandResponse, BrandQue
 from model.user import User
 from api.auth import get_current_user, get_current_admin_user
 from services.brand_service import BrandService
+from services.import_service import ImportService
 
 router = APIRouter()
 
@@ -19,6 +20,16 @@ def create_brand(
     """创建品牌（需要管理员权限）"""
     brand_entity = BrandService.create_brand(session, brand.model_dump())
     return BrandResponse.model_validate(brand_entity)
+
+@router.post("/brands/import", summary="批量导入品牌")
+async def import_brands(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """从 Excel 文件批量导入品牌（需要管理员权限）"""
+    content = await file.read()
+    return ImportService.import_brands(session, content)
 
 @router.get("/brands/", response_model=List[BrandResponse], summary="获取品牌列表")
 def read_brands(
