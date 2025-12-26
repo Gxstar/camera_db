@@ -1,5 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi.responses import FileResponse
+import os
 from sqlmodel import Session, select
 
 from database.engine import get_session
@@ -30,6 +32,16 @@ async def import_cameras(
     """从 Excel 文件批量导入相机（需要管理员权限）"""
     content = await file.read()
     return ImportService.import_cameras(session, content)
+
+@router.get("/cameras/template", summary="下载相机导入模板")
+def download_cameras_template():
+    """下载相机导入 Excel 模板"""
+    file_path = os.path.join("static", "templates", "camera_template.xlsx")
+    return FileResponse(
+        path=file_path,
+        filename="camera_import_template.xlsx",
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 @router.get("/cameras/", response_model=List[CameraResponse], summary="获取相机列表")
 def read_cameras(
