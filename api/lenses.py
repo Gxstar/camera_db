@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Request
 from fastapi.responses import FileResponse
 import os
 from sqlmodel import Session
@@ -10,6 +10,7 @@ from model.user import User
 from api.auth import get_current_user, get_current_admin_user
 from services.lens_service import LensService
 from services.import_service import ImportService
+from utils.limiter import limiter
 
 router = APIRouter()
 
@@ -34,7 +35,8 @@ async def import_lenses(
     return ImportService.import_lenses(session, content)
 
 @router.get("/lenses/template", summary="下载镜头导入模板")
-def download_lenses_template():
+@limiter.limit("5/minute")
+def download_lenses_template(request: Request):
     """下载镜头导入 Excel 模板"""
     file_path = os.path.join("static", "templates", "lens_template.xlsx")
     return FileResponse(

@@ -7,8 +7,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import get_swagger_ui_html
 from sqlmodel import Session
 from dotenv import load_dotenv
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from database.engine import engine, create_db_and_tables
+from utils.limiter import limiter
 
 # 加载环境变量
 load_dotenv()
@@ -30,6 +33,10 @@ app = FastAPI(
     redoc_url=None,  # 禁用默认的/redoc路由
     lifespan=lifespan  # 使用新的lifespan事件处理器
 )
+
+# 限流设置
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # 添加CORS中间件
 app.add_middleware(

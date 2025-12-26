@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Request
 from fastapi.responses import FileResponse
 import os
 from sqlmodel import Session
@@ -10,6 +10,7 @@ from model.user import User
 from api.auth import get_current_user, get_current_admin_user
 from services.brand_service import BrandService
 from services.import_service import ImportService
+from utils.limiter import limiter
 
 router = APIRouter()
 
@@ -34,7 +35,8 @@ async def import_brands(
     return ImportService.import_brands(session, content)
 
 @router.get("/brands/template", summary="下载品牌导入模板")
-def download_brands_template():
+@limiter.limit("5/minute")
+def download_brands_template(request: Request):
     """下载品牌导入 Excel 模板"""
     file_path = os.path.join("static", "templates", "brand_template.xlsx")
     return FileResponse(

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Request
 from fastapi.responses import FileResponse
 import os
 from sqlmodel import Session, select
@@ -10,6 +10,7 @@ from model.user import User
 from api.auth import get_current_user, get_current_admin_user
 from services.camera_service import CameraService
 from services.import_service import ImportService
+from utils.limiter import limiter
 
 router = APIRouter()
 
@@ -34,7 +35,8 @@ async def import_cameras(
     return ImportService.import_cameras(session, content)
 
 @router.get("/cameras/template", summary="下载相机导入模板")
-def download_cameras_template():
+@limiter.limit("5/minute")
+def download_cameras_template(request: Request):
     """下载相机导入 Excel 模板"""
     file_path = os.path.join("static", "templates", "camera_template.xlsx")
     return FileResponse(
